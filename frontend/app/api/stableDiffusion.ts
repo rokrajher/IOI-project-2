@@ -1,17 +1,17 @@
 import axios from 'axios';
 import FormData from 'form-data';
 
-const MYAPIKEY = 'sk-nqXFdq71kVgrmN2bNs4ngqBn2EGl7QUPDODIrt88LZzwxNcI';
-const authString = `Bearer ${MYAPIKEY}`;
+const key = process.env.NEXT_PUBLIC_SD_APIKEY;
+const authString = `Bearer ${key}`;
 
 interface ResponseData {
   status: number;
   data: Buffer;
 }
 
-export default async function generateImage(): Promise<Buffer | null> {
+export default async function generateImage(promptText:string): Promise<Buffer | null> {
   const form = new FormData();
-  form.append('prompt', 'Lighthouse on a cliff overlooking the ocean');
+  form.append('prompt', promptText);
   form.append('output_format', 'jpeg');
 
   try {
