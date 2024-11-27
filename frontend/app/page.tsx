@@ -25,16 +25,30 @@ export default function Home() {
     <main className='bg-white text-black'>
       <Topbar />
       <div className='grid grid-cols-2 bg-neutral-100 p-5'>
-        <div className='flex flex-col items-center justify-center bg-red-50 p-5'>
-          <button className='rounded-md bg-sky-700 p-2 text-white' onClick={onClick}>Generate</button>
-          
-          {/* Image container with a border and placeholder text */}
+        <div className='left-container bg-red-200 p-5'>
+            <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+              const reader = new FileReader();
+              reader.onload = (event) => {
+                const pdfDataUrl = event.target?.result as string;
+                console.log('PDF Data URL:', pdfDataUrl);
+              };
+              reader.readAsDataURL(file);
+              }
+            }}
+            className="mb-4"
+            />
           <div 
-            className={`w-48 h-48 border-2 border-dashed ${imageSrc ? 'border-transparent' : 'border-sky-500'} flex items-center justify-center`}
+            className={`w-full aspect-video border-2 border-dashed ${imageSrc ? 'border-transparent' : 'border-sky-500'} flex items-center justify-center`}
           >
             {!imageSrc && <p className="text-sky-500">Image will appear here</p>}
             {imageSrc && <img src={imageSrc} alt="Generated Image" className="w-full h-full object-cover" />}
           </div>
+          <button className='rounded-md bg-sky-700 p-2 text-white mt-4' onClick={onClick}>Generate</button>
         </div>
         <div className='flex flex-col items-center justify-center bg-red-50 p-5'>
           <p>HEllow</p>
