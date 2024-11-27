@@ -1,6 +1,8 @@
 'use client';
 import { useState } from 'react';
 import generateImage from './api/stableDiffusion';
+import Footer from './components/footer';
+import Topbar from './components/topbar';
 
 export default function Home() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -18,12 +20,10 @@ export default function Home() {
   };
 
   return (
+
+
     <main className='bg-white text-black'>
-      <div className='flex justify-between p-5'>
-        <h1 className='text-2xl font-bold text-sky-800'>IOI movie set generator</h1>
-        <h2 className='text-xl font-semibold text-neutral-500'>By Rok Rajher</h2>
-      </div>
-  
+      <Topbar />
       <div className='grid grid-cols-2 bg-neutral-100 p-5'>
         <div className='flex flex-col items-center justify-center bg-red-50 p-5'>
           <button className='rounded-md bg-sky-700 p-2 text-white' onClick={onClick}>Generate</button>
@@ -40,6 +40,7 @@ export default function Home() {
           <p>HEllow</p>
         </div>
       </div>
+      <Footer />
     </main>
   );
 }  
