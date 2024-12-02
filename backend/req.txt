@@ -10,3 +10,5 @@ protobuf
 sentencepiece
 python-dotenv
 bitsandbytes
+openai
+pydantic
