@@ -1,8 +1,7 @@
-import axios from 'axios';
+import axios from "axios";
 
 interface ResponseData {
-  image: string; // The backend sends a base64-encoded image string
-  error?: string; // Error message, if any
+  image: string; // Base64-encoded image
 }
 
 /**
@@ -12,22 +11,17 @@ interface ResponseData {
  */
 export default async function generateImage(promptText: string): Promise<string | null> {
   try {
-    const response = await axios.get<ResponseData>('http://0.0.0.0:8000/generate', {
+    const response = await axios.get<ResponseData>("http://localhost:8000/generate", {
       params: { prompt: promptText },
-      headers: {
-        Accept: 'application/json',
-      },
     });
 
     if (response.status === 200 && response.data.image) {
-      return response.data.image; // Base64 image string
-    } else if (response.data.error) {
-      throw new Error(response.data.error);
+      return response.data.image; // Return the base64 image string
     } else {
-      throw new Error('Unknown error occurred');
+      throw new Error("Invalid response from backend");
     }
   } catch (error) {
-    console.error('Error generating image:', error);
+    console.error("Error generating image:", error);
     return null;
   }
 }

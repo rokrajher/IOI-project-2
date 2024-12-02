@@ -12,9 +12,8 @@ export default function Home() {
     const imageBuffer = await generateImage(promptText);
 
     if (imageBuffer) {
-      // Convert the buffer to a Blob URL for image display
-      const blob = new Blob([imageBuffer], { type: 'image/jpeg' });
-      const imageUrl = URL.createObjectURL(blob);
+      // Directly set the base64 string as the source
+      const imageUrl = `data:image/png;base64,${imageBuffer}`;
       setImageSrc(imageUrl);
     }
   };

@@ -3,6 +3,10 @@ uvicorn
 torch
 diffusers
 transformers
-pillow  # Required by diffusers
+pillow 
 numpy
 accelerate
+protobuf
+sentencepiece
+python-dotenv
+bitsandbytes
