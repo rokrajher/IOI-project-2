@@ -12,7 +12,8 @@ from pydantic import BaseModel
 from openai import OpenAI, OpenAIError
 
 
-test_scene ="In *The Lion King*, a pivotal scene occurs when Simba stands on Pride Rock after the death of his father, Mufasa. The sun rises dramatically behind him, casting a golden glow and symbolizing the transition from darkness to light. As he gazes over the kingdom, a sense of responsibility weighs heavily on him, reflecting his inner conflict between guilt for his father's death and the duty to reclaim his rightful place as king. The iconic music swells, evoking deep emotions, and Simba is joined by Rafiki, who symbolizes wisdom and guidance, reinforcing the themes of legacy and self-discovery. The moment encapsulates Simba’s journey of growth and the enduring cycle of life, as he embraces his identity and destiny as the true king of the Pride Lands."
+test_scene_simba ="In *The Lion King*, a pivotal scene occurs when Simba stands on Pride Rock after the death of his father, Mufasa. The sun rises dramatically behind him, casting a golden glow and symbolizing the transition from darkness to light. As he gazes over the kingdom, a sense of responsibility weighs heavily on him, reflecting his inner conflict between guilt for his father's death and the duty to reclaim his rightful place as king. The iconic music swells, evoking deep emotions, and Simba is joined by Rafiki, who symbolizes wisdom and guidance, reinforcing the themes of legacy and self-discovery. The moment encapsulates Simba’s journey of growth and the enduring cycle of life, as he embraces his identity and destiny as the true king of the Pride Lands."
+test_scene_parasite = "The poster for Parasite features a dark color palette dominated by deep greens, blacks, and grays, creating a moody atmosphere that reflects the film's themes of class struggle and social disparity. Central to the design is the stark contrast between the opulent house of the wealthy Park family and the cramped living conditions of the impoverished Kim family, often depicted in a split image that symbolizes their vastly different lives. The title *Parasite* is prominently displayed in bold, white letters, standing out against the dark background, while additional text may include taglines or credits in smaller font at the bottom. The overall mood conveys tension and mystery, inviting viewers to explore the film's commentary on deception, manipulation, and the lengths people will go to for a better life, effectively illustrating the parasitic relationship between the two families."
 dotenv.load_dotenv()
 
 hf_auth_token = os.getenv("HF_AUTH_TOKEN")
@@ -126,6 +127,6 @@ async def extract(request: ExtractRequest):
 
     except Exception as e:
         # Catch any other exceptions
-        return ExtractResponse(scenes=[test_scene], error=str(e))
+        return ExtractResponse(scenes=[test_scene_parasite, test_scene_simba], error=str(e))
 
 
