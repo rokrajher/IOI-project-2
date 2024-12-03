@@ -5,6 +5,7 @@ import extractScene from './api/extractScene';
 import Footer from './components/footer';
 import Topbar from './components/topbar';
 import * as pdfjsLib from 'pdfjs-dist/webpack';
+import updatePromptText from './utils/helpers';
 
 enum ImageStyle {
   'Realism' = 'Realism',
@@ -30,14 +31,18 @@ export default function Home() {
   const [allScenes, setAllScenes] = useState<string[]>([]);
   const [loadingExtracting, setLoadingExtracting] = useState<boolean>(false);
   const [loadingImage, setLoadingImage] = useState<boolean>(false);
-  const [imageStyle, setImageStyle] = useState<ImageStyle>(ImageStyle.Realism);
-  const [brightness, setBrightness] = useState<Brightness>(Brightness.Normal);
-  const [color, setColor] = useState<Color>(Color.Color);
+  const [imageStyle, setImageStyle] = useState<ImageStyle>();
+  const [brightness, setBrightness] = useState<Brightness>();
+  const [color, setColor] = useState<Color>();
+  const [promptToSubmit, setPromptToSubmit] = useState<string>('');
+
+
+  const allEmpty = promptText.trim() === '' || (!imageStyle && !brightness && !color);
 
   const generateImg = async () => {
     setLoadingImage(true); // Start loading
     try {
-      const imageBuffer = await generateImage(promptText);
+      const imageBuffer = await generateImage(promptToSubmit);
       if (imageBuffer) {
         const imageUrl = `data:image/png;base64,${imageBuffer}`;
         setImageSrc(imageUrl);
@@ -47,15 +52,31 @@ export default function Home() {
     }
   };
 
+  const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log('Form submitted');
+    if (promptText.trim() === '') {
+      return;
+    }
+    const updatedPrompt = updatePromptText(promptText, imageStyle, brightness, color);
+    setPromptToSubmit(updatedPrompt);
+
+    window.alert('Your parameters have been set successfully!');
+
+    console.log('Updated prompt:', updatedPrompt);
+
+
+  };
+
   const extractSceneDescription = async () => {
     setLoadingExtracting(true); // Start loading
     try {
       const sceneDescription = await extractScene(screenplay);
       if (sceneDescription) {
-        console.log('Main scenes:', sceneDescription);
         setAllScenes(sceneDescription);
         if (sceneDescription.length > 0) {
           setPromptText(sceneDescription[0]);
+          setPromptToSubmit(sceneDescription[0]);
         }
       }
     } finally {
@@ -71,6 +92,9 @@ export default function Home() {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setBrightness(undefined)
+    setColor(undefined)
+    setImageStyle(undefined)
     if (file) {
       const reader = new FileReader();
       reader.onload = async (event) => {
@@ -86,9 +110,8 @@ export default function Home() {
             const textContent: pdfjsLib.TextContent = await page.getTextContent();
             const pageText: string = textContent.items.map((item: pdfjsLib.TextItem) => item.str).join(' ');
             fullText += `${pageText}\n\n`;
-          }
+          };
 
-          console.log('Screenplay text:', fullText);
           setScreenplay(fullText);
         }).catch((error: any) => {
           console.error('Error during PDF processing:', error);
@@ -116,11 +139,10 @@ export default function Home() {
           />
 
           {loadingExtracting ? (
-            <p>Loading scenes...</p>
+            <p className='text-green-500'>Loading scenes...</p>
           ) : (
             allScenes.length > 0 && (
               <div>
-                <h2 className='mb-2'>Extracted scenes</h2>
                 <ul className='flex space-x-3'>
                   {allScenes.map((scene, index) => (
                     <li
@@ -143,7 +165,7 @@ export default function Home() {
           />
           <div className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-2 border-dashed ${imageSrc ? 'border-transparent' : 'border-neutral-700'} flex items-center justify-center`}>
             {!imageSrc && !loadingImage && <p className="text-2xl text-neutral-800 font-semibold">Image will appear here</p>}
-            {loadingImage && <p>Generating image...</p>}
+            {loadingImage && <p className='text-2xl text-neutral-600'>Generating image...</p>}
             {imageSrc && <img src={imageSrc} alt="Generated Image" className="w-full h-full object-cover" />}
           </div>
           <button className='rounded-md bg-sky-700 p-2 text-white mt-4' onClick={generateImg} disabled={loadingImage}>
@@ -159,6 +181,7 @@ export default function Home() {
                 {Object.values(ImageStyle).map((style) => (
                   <button
                     key={style}
+                    id={`image-style-${style}`}
                     className={`p-2 rounded-md ${imageStyle === style ? 'bg-sky-600 text-white' : 'bg-gray-200 text-black'} hover:bg-sky-500`}
                     onClick={() => setImageStyle(style as ImageStyle)}
                   >
@@ -173,6 +196,7 @@ export default function Home() {
                 {Object.values(Brightness).map((level) => (
                   <button
                     key={level}
+                    id={`brigtness-${level}`}
                     className={`p-2 rounded-md ${brightness === level ? 'bg-sky-600 text-white' : 'bg-gray-200 text-black'} hover:bg-sky-500`}
                     onClick={() => setBrightness(level as Brightness)}
                   >
@@ -187,6 +211,7 @@ export default function Home() {
                 {Object.values(Color).map((colorOption) => (
                   <button
                     key={colorOption}
+                    id={`color-${colorOption}`}
                     className={`p-2 rounded-md ${color === colorOption ? 'bg-sky-600 text-white' : 'bg-gray-200 text-black'} hover:bg-sky-500`}
                     onClick={() => setColor(colorOption as Color)}
                   >
@@ -195,6 +220,11 @@ export default function Home() {
                 ))}
               </div>
             </div>
+            <form onSubmit={onFormSubmit} className='w-full flex items-center justify-center'>
+              <button id="submit-button" className={`rounded-md w-full bg-sky-700 p-2 text-white ${allEmpty ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={allEmpty} type="submit">
+                Apply
+              </button>
+            </form>
           </div>
         </div>
       </div>
