@@ -5,11 +5,10 @@ import extractScene from './api/extractScene';
 import Footer from './components/footer';
 import Topbar from './components/topbar';
 import * as pdfjsLib from 'pdfjs-dist/webpack';
-import { all } from 'axios';
 
 export default function Home() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [promptText, setPromptText] = useState<string>('A beautiful sunset over the ocean');
+  const [promptText, setPromptText] = useState<string>('');
   const [screenplay, setScreenplay] = useState<string>('');
   const [allScenes, setAllScenes] = useState<string[]>([]);
   const [loadingExtracting, setLoadingExtracting] = useState<boolean>(false);
@@ -79,6 +78,7 @@ export default function Home() {
       <Topbar />
       <div className='grid grid-cols-2 bg-neutral-100 p-5'>
         <div className='left-container p-5'>
+          <h1 className='text-2xl font-semibold mb-4 text-neutral-800'>Generate your scene from a pdf file</h1>
           <input
             type="file"
             accept="application/pdf"
@@ -102,8 +102,8 @@ export default function Home() {
             placeholder="Upload your script for automatic prompt generation..."
             className="w-full h-32 p-2 border border-gray-300 rounded-md mb-4"
           />
-          <div className={`w-full aspect-video border-2 border-dashed ${imageSrc ? 'border-transparent' : 'border-sky-700'} flex items-center justify-center`}>
-            {!imageSrc && <p className="text-2xl text-neutral-500 font-semibold">Image will appear here</p>}
+          <div className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-2 border-dashed ${imageSrc ? 'border-transparent' : 'border-neutral-700'} flex items-center justify-center`}>
+            {!imageSrc && <p className="text-2xl text-neutral-800 font-semibold">Image will appear here</p>}
             {imageSrc && <img src={imageSrc} alt="Generated Image" className="w-full h-full object-cover" />}
           </div>
           <button className='rounded-md bg-sky-700 p-2 text-white mt-4' onClick={generateImg}>Generate</button>

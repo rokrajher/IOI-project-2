@@ -11,6 +11,8 @@ import base64
 from pydantic import BaseModel
 from openai import OpenAI, OpenAIError
 
+
+test_scene ="In *The Lion King*, a pivotal scene occurs when Simba stands on Pride Rock after the death of his father, Mufasa. The sun rises dramatically behind him, casting a golden glow and symbolizing the transition from darkness to light. As he gazes over the kingdom, a sense of responsibility weighs heavily on him, reflecting his inner conflict between guilt for his father's death and the duty to reclaim his rightful place as king. The iconic music swells, evoking deep emotions, and Simba is joined by Rafiki, who symbolizes wisdom and guidance, reinforcing the themes of legacy and self-discovery. The moment encapsulates Simba’s journey of growth and the enduring cycle of life, as he embraces his identity and destiny as the true king of the Pride Lands."
 dotenv.load_dotenv()
 
 hf_auth_token = os.getenv("HF_AUTH_TOKEN")
@@ -124,6 +126,6 @@ async def extract(request: ExtractRequest):
 
     except Exception as e:
         # Catch any other exceptions
-        return ExtractResponse(scenes=["Girl with the red ballon scene from Shindlerz list"], error=str(e))
+        return ExtractResponse(scenes=[test_scene], error=str(e))
 
 
