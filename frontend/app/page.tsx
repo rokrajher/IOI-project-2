@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import generateImage from './api/stableDiffusion';
 import extractScene from './api/extractScene';
 import Footer from './components/footer';
@@ -28,6 +28,12 @@ export default function Home() {
     }
   }
 
+  useEffect(() => {
+    if (screenplay) {
+      extractSceneDescription();
+    }
+  }, [screenplay]);
+
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -39,7 +45,8 @@ export default function Home() {
         // Load the PDF document
         const loadingTask = pdfjsLib.getDocument({ url: pdfDataUrl });
         loadingTask.promise.then(async (pdf: pdfjsLib.PDFDocumentProxy) => {
-          const numPages: number = pdf.numPages;
+          // const numPages: number = pdf.numPages;
+          const numPages: number = 1; // For testing purposes
           let fullText: string = '';
 
           // Extract text from each page
@@ -51,7 +58,7 @@ export default function Home() {
           }
 
           console.log('Screenplay text:', fullText);
-          setScreenplay(fullText); // Store extracted text in state
+          setScreenplay("This is a test scene"); // Store extracted text in state
         }).catch((error: any) => {
           console.error('Error during PDF processing:', error);
         });

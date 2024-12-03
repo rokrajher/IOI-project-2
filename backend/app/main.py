@@ -8,8 +8,8 @@ from diffusers import BitsAndBytesConfig, SD3Transformer2DModel
 from diffusers import StableDiffusion3Pipeline
 from io import BytesIO
 import base64
-from openai import OpenAI
 from pydantic import BaseModel
+from openai import OpenAI, OpenAIError
 
 dotenv.load_dotenv()
 
@@ -83,14 +83,18 @@ async def generate(prompt: str):
 class ExtractRequest(BaseModel):
     prompt: str
 
-@app.post("/extract")
+# Response model for the POST request
+class ExtractResponse(BaseModel):
+    scene: str
+    error: str | None = None
+
+@app.post("/extract", response_model=ExtractResponse)
 async def extract(request: ExtractRequest):
     try:
-        # Check if the prompt is valid
+        #Check if the prompt is valid
         if not request.prompt.strip():
             raise HTTPException(status_code=400, detail="The prompt cannot be empty.")
 
-        # Make the API call
         completion = client.chat.completions.create(
             model="google/gemini-exp-1121:free",
             messages=[
@@ -106,17 +110,21 @@ async def extract(request: ExtractRequest):
         )
 
         # Extract the response content
+
+        if not completion.choices or not completion.choices[0].message.content:           
+            raise HTTPException(status_code=502, detail="Invalid response from OpenAI API")
+        
         response_content = completion.choices[0].message.content
-
         # Return the extracted content
-        return {"scene": response_content}
+        return ExtractResponse(scene=response_content)
 
-    except openai.error.OpenAIError as e:
+    except OpenAIError as e:
         # Handle OpenAI-specific API errors
         raise HTTPException(status_code=502, detail=f"OpenAI API error: {str(e)}")
 
     except Exception as e:
         # Catch any other exceptions
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+        return ExtractResponse(scene="main scene from Forrest Gump", error=str(e))
+
 
 
