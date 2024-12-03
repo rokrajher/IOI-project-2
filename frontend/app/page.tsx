@@ -6,29 +6,60 @@ import Footer from './components/footer';
 import Topbar from './components/topbar';
 import * as pdfjsLib from 'pdfjs-dist/webpack';
 
+enum ImageStyle {
+  'Realism' = 'Realism',
+  "Cartoon" = "Cartoon",
+  "Cyberpunk" = "Cyberpunk",
+}
+
+enum Brightness {
+  'Bright' = 'Bright',
+  "Normal" = "Normal",
+  'Dark' = 'Dark',
+}
+
+enum Color {
+  'Color' = 'Color',
+  'Black & White' = 'Black & White',
+}
+
 export default function Home() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [promptText, setPromptText] = useState<string>('');
   const [screenplay, setScreenplay] = useState<string>('');
   const [allScenes, setAllScenes] = useState<string[]>([]);
   const [loadingExtracting, setLoadingExtracting] = useState<boolean>(false);
+  const [loadingImage, setLoadingImage] = useState<boolean>(false);
+  const [imageStyle, setImageStyle] = useState<ImageStyle>(ImageStyle.Realism);
+  const [brightness, setBrightness] = useState<Brightness>(Brightness.Normal);
+  const [color, setColor] = useState<Color>(Color.Color);
 
   const generateImg = async () => {
-    const imageBuffer = await generateImage(promptText);
-    if (imageBuffer) {
-      const imageUrl = `data:image/png;base64,${imageBuffer}`;
-      setImageSrc(imageUrl);
+    setLoadingImage(true); // Start loading
+    try {
+      const imageBuffer = await generateImage(promptText);
+      if (imageBuffer) {
+        const imageUrl = `data:image/png;base64,${imageBuffer}`;
+        setImageSrc(imageUrl);
+      }
+    } finally {
+      setLoadingImage(false); // End loading
     }
   };
 
   const extractSceneDescription = async () => {
-    const sceneDescription = await extractScene(screenplay);
-    if (sceneDescription) {
-      console.log('Main scenes:', sceneDescription);
-      setAllScenes(sceneDescription); // Set all scenes here
-      if (sceneDescription.length > 0) {
-        setPromptText(sceneDescription[0]); // Set promptText to the first scene by default
+    setLoadingExtracting(true); // Start loading
+    try {
+      const sceneDescription = await extractScene(screenplay);
+      if (sceneDescription) {
+        console.log('Main scenes:', sceneDescription);
+        setAllScenes(sceneDescription);
+        if (sceneDescription.length > 0) {
+          setPromptText(sceneDescription[0]);
+        }
       }
+    } finally {
+      setLoadingExtracting(false); // End loading
     }
   };
 
@@ -45,32 +76,30 @@ export default function Home() {
       reader.onload = async (event) => {
         const pdfDataUrl = event.target?.result as string;
 
-        // Load the PDF document
         const loadingTask = pdfjsLib.getDocument({ url: pdfDataUrl });
         loadingTask.promise.then(async (pdf: pdfjsLib.PDFDocumentProxy) => {
           const numPages: number = 1; // For testing purposes
           let fullText: string = '';
 
-          // Extract text from each page
           for (let pageNum: number = 1; pageNum <= numPages; pageNum++) {
             const page: pdfjsLib.PDFPageProxy = await pdf.getPage(pageNum);
             const textContent: pdfjsLib.TextContent = await page.getTextContent();
             const pageText: string = textContent.items.map((item: pdfjsLib.TextItem) => item.str).join(' ');
-            fullText += `${pageText}\n\n`; // Add page text with spacing
+            fullText += `${pageText}\n\n`;
           }
 
           console.log('Screenplay text:', fullText);
-          setScreenplay(fullText); // Store extracted text in state
+          setScreenplay(fullText);
         }).catch((error: any) => {
           console.error('Error during PDF processing:', error);
         });
       };
-      reader.readAsDataURL(file); // Read file as Data URL
+      reader.readAsDataURL(file);
     }
   };
 
   const handleSceneSelect = (scene: string) => {
-    setPromptText(scene); // Update the promptText with the selected scene
+    setPromptText(scene);
   };
 
   return (
@@ -86,15 +115,25 @@ export default function Home() {
             className="mb-4"
           />
 
-          {allScenes.length > 0 && (
-            <div className=''>
-              <h2 className='mb-2'>Extracted scenes</h2>
-              <ul className='flex space-x-3'>
-                {allScenes.map((scene, index) => (
-                  <li className='bg-sky-200 font-semibold text-neutral-700 p-2 rounded-t-md shadow-md hover:cursor-pointer hover:bg-sky-300' key={index} onClick={() => handleSceneSelect(scene)}>Scene {index + 1}</li>
-                ))}
-              </ul>
-            </div>
+          {loadingExtracting ? (
+            <p>Loading scenes...</p>
+          ) : (
+            allScenes.length > 0 && (
+              <div>
+                <h2 className='mb-2'>Extracted scenes</h2>
+                <ul className='flex space-x-3'>
+                  {allScenes.map((scene, index) => (
+                    <li
+                      className='bg-sky-200 font-semibold text-neutral-700 p-2 rounded-t-md shadow-md hover:cursor-pointer hover:bg-sky-300'
+                      key={index}
+                      onClick={() => handleSceneSelect(scene)}
+                    >
+                      Scene {index + 1}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
           )}
           <textarea
             value={promptText}
@@ -103,13 +142,60 @@ export default function Home() {
             className="w-full h-32 p-2 border border-gray-300 rounded-md mb-4"
           />
           <div className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-2 border-dashed ${imageSrc ? 'border-transparent' : 'border-neutral-700'} flex items-center justify-center`}>
-            {!imageSrc && <p className="text-2xl text-neutral-800 font-semibold">Image will appear here</p>}
+            {!imageSrc && !loadingImage && <p className="text-2xl text-neutral-800 font-semibold">Image will appear here</p>}
+            {loadingImage && <p>Generating image...</p>}
             {imageSrc && <img src={imageSrc} alt="Generated Image" className="w-full h-full object-cover" />}
           </div>
-          <button className='rounded-md bg-sky-700 p-2 text-white mt-4' onClick={generateImg}>Generate</button>
+          <button className='rounded-md bg-sky-700 p-2 text-white mt-4' onClick={generateImg} disabled={loadingImage}>
+            {loadingImage ? 'Generating...' : 'Generate'}
+          </button>
         </div>
-        <div className='flex flex-col items-center justify-center bg-red-50 p-5'>
-          <h2 className='mb-2'>Parameters</h2>
+        <div className='right-container p-5'>
+          <h1 className='text-2xl font-semibold mb-4 text-neutral-800'>Set parameters</h1>
+          <div className='flex flex-col space-y-4'>
+            <div>
+              <span>Image Style</span>
+              <div className='flex space-x-2'>
+                {Object.values(ImageStyle).map((style) => (
+                  <button
+                    key={style}
+                    className={`p-2 rounded-md ${imageStyle === style ? 'bg-sky-600 text-white' : 'bg-gray-200 text-black'} hover:bg-sky-500`}
+                    onClick={() => setImageStyle(style as ImageStyle)}
+                  >
+                    {style}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span>Brightness</span>
+              <div className='flex space-x-2'>
+                {Object.values(Brightness).map((level) => (
+                  <button
+                    key={level}
+                    className={`p-2 rounded-md ${brightness === level ? 'bg-sky-600 text-white' : 'bg-gray-200 text-black'} hover:bg-sky-500`}
+                    onClick={() => setBrightness(level as Brightness)}
+                  >
+                    {level}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <span>Color</span>
+              <div className='flex space-x-2'>
+                {Object.values(Color).map((colorOption) => (
+                  <button
+                    key={colorOption}
+                    className={`p-2 rounded-md ${color === colorOption ? 'bg-sky-600 text-white' : 'bg-gray-200 text-black'} hover:bg-sky-500`}
+                    onClick={() => setColor(colorOption as Color)}
+                  >
+                    {colorOption}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />
