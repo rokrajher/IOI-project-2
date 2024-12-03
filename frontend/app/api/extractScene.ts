@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 interface ExtractSceneResponse {
-  scene: string; // Detailed description of the main scene
+  scenes: string[]; // Detailed description of the main scene
   error?: string; // Error message, if any
 }
 
@@ -10,7 +10,7 @@ interface ExtractSceneResponse {
  * @param screenplay The screenplay script as input.
  * @returns A promise that resolves to the main scene description or null if there's an error.
  */
-export default async function extractScene(screenplay: string): Promise<string | null> {
+export default async function extractScene(screenplay: string): Promise<string[] | null> {
   try {
     // Validate input
     if (!screenplay.trim()) {
@@ -24,10 +24,12 @@ export default async function extractScene(screenplay: string): Promise<string |
       prompt: screenplay,
     });
 
+    console.log("Response from backend:", response);
+
     // Check for a successful response
-    if (response.status === 200 && response.data.scene) {
-      console.log("Main scene extracted successfully:", response.data.scene);
-      return response.data.scene;
+    if (response.status != 500 && response.data.scenes) {
+      console.log("Main scene extracted successfully:", response.data.scenes);
+      return response.data.scenes;
     } else if (response.data.error) {
       throw new Error(response.data.error);
     } else {
@@ -36,6 +38,6 @@ export default async function extractScene(screenplay: string): Promise<string |
   } catch (error) {
     // Handle errors gracefully
     console.error('Error extracting the main scene:', error);
-    return null;
+    return null
   }
 }
