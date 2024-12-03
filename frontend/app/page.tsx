@@ -41,6 +41,7 @@ export default function Home() {
 
   const generateImg = async () => {
     setLoadingImage(true); // Start loading
+    setImageSrc(null); // Clear previous image
     try {
       const imageBuffer = await generateImage(promptToSubmit);
       if (imageBuffer) {
@@ -61,7 +62,6 @@ export default function Home() {
     const updatedPrompt = updatePromptText(promptText, imageStyle, brightness, color);
     setPromptToSubmit(updatedPrompt);
     window.alert('Your parameters have been set successfully!');
-    console.log('Updated prompt:', updatedPrompt);
   };
 
   const extractSceneDescription = async () => {
