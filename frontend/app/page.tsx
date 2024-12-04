@@ -42,6 +42,7 @@ export default function Home() {
   const generateImg = async () => {
     setLoadingImage(true); // Start loading
     setImageSrc(null); // Clear previous image
+    console.log("Prompt to submit:", promptToSubmit);
     try {
       const imageBuffer = await generateImage(promptToSubmit);
       if (imageBuffer) {
@@ -97,15 +98,16 @@ export default function Home() {
         const pdfDataUrl = event.target?.result as string;
         const loadingTask = pdfjsLib.getDocument({ url: pdfDataUrl });
         loadingTask.promise.then(async (pdf: pdfjsLib.PDFDocumentProxy) => {
-          const numPages: number = 1; // For testing purposes
+          const numPages: number = 38; // For testing purposes
           let fullText: string = '';
 
-          for (let pageNum: number = 1; pageNum <= numPages; pageNum++) {
+          for (let pageNum: number = 37; pageNum <= numPages; pageNum++) {
             const page: pdfjsLib.PDFPageProxy = await pdf.getPage(pageNum);
             const textContent: pdfjsLib.TextContent = await page.getTextContent();
             const pageText: string = textContent.items.map((item: pdfjsLib.TextItem) => item.str).join(' ');
             fullText += `${pageText}\n\n`;
           }
+          // console.log('Full text:', fullText);
 
           setScreenplay(fullText);
         }).catch((error: any) => {
@@ -118,6 +120,7 @@ export default function Home() {
 
   const handleSceneSelect = (scene: string, ind:number) => {
     setPromptText(scene);
+    setPromptToSubmit(scene);
     setInd(ind);
   };
 

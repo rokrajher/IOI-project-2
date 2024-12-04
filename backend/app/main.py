@@ -10,7 +10,8 @@ from io import BytesIO
 import base64
 from pydantic import BaseModel
 from openai import OpenAI, OpenAIError
-
+import json
+import re
 
 test_scene_simba ="In *The Lion King*, a pivotal scene occurs when Simba stands on Pride Rock after the death of his father, Mufasa. The sun rises dramatically behind him, casting a golden glow and symbolizing the transition from darkness to light. As he gazes over the kingdom, a sense of responsibility weighs heavily on him, reflecting his inner conflict between guilt for his father's death and the duty to reclaim his rightful place as king. The iconic music swells, evoking deep emotions, and Simba is joined by Rafiki, who symbolizes wisdom and guidance, reinforcing the themes of legacy and self-discovery. The moment encapsulates Simba’s journey of growth and the enduring cycle of life, as he embraces his identity and destiny as the true king of the Pride Lands."
 test_scene_parasite = "The poster for Parasite features a dark color palette dominated by deep greens, blacks, and grays, creating a moody atmosphere that reflects the film's themes of class struggle and social disparity. Central to the design is the stark contrast between the opulent house of the wealthy Park family and the cramped living conditions of the impoverished Kim family, often depicted in a split image that symbolizes their vastly different lives. The title *Parasite* is prominently displayed in bold, white letters, standing out against the dark background, while additional text may include taglines or credits in smaller font at the bottom. The overall mood conveys tension and mystery, inviting viewers to explore the film's commentary on deception, manipulation, and the lengths people will go to for a better life, effectively illustrating the parasitic relationship between the two families."
@@ -90,6 +91,19 @@ class ExtractResponse(BaseModel):
 class ExtractRequest(BaseModel):
     prompt: str
 
+
+meta_prompt = """
+You are given a movie screenplay script. Your task is to extract the single most significant scene from the script and return it as a prompt. The prompt will then be used for the generation of an image.
+
+Please identify the single most significant scene and return a concise, detailed description of it in full sentences. You MUST return it in a single paragraph.
+
+Here is an example of how the prompt should look like:
+Prompt: "Eye-level shot of a rustic, hand-crafted wooden table covered with roasted coffee beans, a burlap sack spilling beans in the foreground. A hot steaming cup of espresso sits beside the sack of coffee beans, with wisps of steam curling into the air."
+
+Return the extracted scene in a single paragraph.
+"""
+
+
 @app.post("/extract", response_model=ExtractResponse)
 async def extract(request: ExtractRequest):
     try:
@@ -98,17 +112,17 @@ async def extract(request: ExtractRequest):
             raise HTTPException(status_code=400, detail="The prompt cannot be empty.")
 
         completion = client.chat.completions.create(
-            model="google/gemini-exp-1121:free",
+            model="meta-llama/llama-3.2-3b-instruct:free",
             messages=[
                 {
+                    "role": "system", 
+                    "content": meta_prompt},
+                {
                     "role": "user",
-                    "content": (
-                        "You are given a movie screenplay script. Your task is to extract up to three main scenes from the script. "
-                        "The main scenes are the most important or central parts of the screenplay, which typically include key actions, dialogue, or events that define the story's progression. "
-                        "Please identify up to three main scenes and return detailed descriptions of them in full sentences, including the location, characters involved, and what happens in each scene:\n\n" + request.prompt
-                    )
+                    "content": request.prompt
                 }
-            ]
+            ],
+            temperature=0.1,
         )
 
         # Extract the response content
@@ -116,10 +130,10 @@ async def extract(request: ExtractRequest):
             raise HTTPException(status_code=502, detail="Invalid response from OpenAI API")
 
         response_content = completion.choices[0].message.content
-        scenes = response_content.split("\n\n")[:3]  # Split the response into scenes and limit to 3
+        print("response_content", response_content)
 
         # Return the extracted scenes
-        return ExtractResponse(scenes=scenes)
+        return ExtractResponse(scenes=[response_content])
 
     except OpenAIError as e:
         # Handle OpenAI-specific API errors
