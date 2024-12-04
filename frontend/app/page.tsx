@@ -98,10 +98,11 @@ export default function Home() {
         const pdfDataUrl = event.target?.result as string;
         const loadingTask = pdfjsLib.getDocument({ url: pdfDataUrl });
         loadingTask.promise.then(async (pdf: pdfjsLib.PDFDocumentProxy) => {
-          const numPages: number = 38; // For testing purposes
+          const startPage: number = 6;
+          const numPages: number = 7; // For testing purposes frozen 37 to 38, space odyssey from 6 to 7
           let fullText: string = '';
 
-          for (let pageNum: number = 37; pageNum <= numPages; pageNum++) {
+          for (let pageNum: number = startPage; pageNum <= numPages; pageNum++) {
             const page: pdfjsLib.PDFPageProxy = await pdf.getPage(pageNum);
             const textContent: pdfjsLib.TextContent = await page.getTextContent();
             const pageText: string = textContent.items.map((item: pdfjsLib.TextItem) => item.str).join(' ');
