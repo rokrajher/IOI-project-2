@@ -29,7 +29,7 @@ export default async function extractScene(screenplay: string): Promise<string[]
     // Check for a successful response
     if (response.status != 500 && response.data.scenes) {
       console.log("Main scene extracted successfully:", response.data.scenes);
-      return response.data.scenes;
+      return response.data.scenes.slice(0, 3);
     } else if (response.data.error) {
       throw new Error(response.data.error);
     } else {

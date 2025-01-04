@@ -1,16 +1,16 @@
 export default function updatePromptText(prompt: string, imageStyle: string | undefined, brigtness: string | undefined, color:string | undefined ) : string {
 
-    let addedText = 'Also, the image should have the following properties:\n';
+    let addedText = 'Generated image should have the following properties\n';
     if (imageStyle) {
-        addedText += `Image style: ${imageStyle}\n`;
+        addedText += `Image style should be ${imageStyle}\n.`;
     }
     if (brigtness) {
-        addedText += `Brightness: ${brigtness}\n`;
+        addedText += `Brightness of the image should be ${brigtness}\n.`;
     }
     if (color) {
-        addedText += `Color: ${color}\n`;
+        addedText += `The color of the image should be ${color}\n.`;
     }
-    const updatedPrompt = prompt + addedText;
+    const updatedPrompt =  addedText + prompt;
 
     return updatedPrompt;
 }
