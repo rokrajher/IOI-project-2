@@ -177,9 +177,8 @@ export default function Home() {
             className="w-full h-32 p-2 border border-gray-300 rounded-md mb-4 transition duration-200 ease-in-out focus:border-sky-700 focus:outline-none text-neutral-700"
           />
           <div
-            className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-4 border-dashed ${
-              imageSrc ? 'border-transparent' : 'border-neutral-700'
-            } flex items-center justify-center transition duration-200 ease-in-out`}
+            className={`w-full bg-gradient-to-tr rounded-md shadow-md from-red-300 to-sky-300 aspect-video
+             flex items-center justify-center transition duration-200 ease-in-out`}
           >
             {!imageSrc && !loadingImage && (
               <p className="text-2xl text-neutral-800 font-semibold">Video will appear here</p>
@@ -189,7 +188,7 @@ export default function Home() {
               <video
                 src={imageSrc}
                 controls
-                className="w-full h-full object-cover transition duration-200 ease-in-out"
+                className="w-full h-full object-cover transition duration-200 ease-in-out border-2 border-sky-500"
               >
                 Your browser does not support the video tag.
               </video>
