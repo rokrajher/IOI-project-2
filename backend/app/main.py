@@ -5,11 +5,12 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import torch
 from diffusers import BitsAndBytesConfig, SD3Transformer2DModel
-from diffusers import StableDiffusion3Pipeline
+from diffusers import StableDiffusion3Pipeline, StableVideoDiffusionPipeline
 from io import BytesIO
 import base64
 from pydantic import BaseModel
 from openai import OpenAI, OpenAIError
+from diffusers.utils import load_image, export_to_video
 import json
 import re
 
@@ -57,6 +58,13 @@ pipeline = StableDiffusion3Pipeline.from_pretrained(
 pipeline.enable_model_cpu_offload()
 
 
+pipe = StableVideoDiffusionPipeline.from_pretrained(
+    "stabilityai/stable-video-diffusion-img2vid-xt", torch_dtype=torch.float16, variant="fp16"
+)
+pipe.enable_model_cpu_offload()
+generator = torch.manual_seed(42)
+
+
 
 @app.get("/generate")
 async def generate(prompt: str):
@@ -69,13 +77,23 @@ async def generate(prompt: str):
             max_sequence_length=512,
         ).images[0]
 
-        # Save the image to a buffer
-        buffer = BytesIO()
-        image.save(buffer, format="PNG")
-        img_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-        # Return the base64-encoded image in JSON format
-        return JSONResponse(content={"image": img_str})
+        
+        print("generating image...")       
+        # Load the conditioning image
+        image = load_image(image)
+        image = image.resize((1024, 576))
+
+        frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
+        # Export the frames to a video file
+        export_to_video(frames, "generated.mp4", fps=7)
+
+        # Read the video file and encode it in base64
+        with open("generated.mp4", "rb") as video_file:
+            video_str = base64.b64encode(video_file.read()).decode("utf-8")
+
+        # Return the base64-encoded video in JSON format
+        return JSONResponse(content={"video": video_str})
 
     except Exception as e:
         # Handle errors and return a clear message

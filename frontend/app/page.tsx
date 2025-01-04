@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import generateImage from './api/stableDiffusion';
+import generateVideo from './api/stableDiffusion';
 import extractScene from './api/extractScene';
 import Footer from './components/footer';
 import Topbar from './components/topbar';
@@ -39,15 +39,15 @@ export default function Home() {
 
   const allEmpty = promptText.trim() === '' || (!imageStyle && !brightness && !color);
 
-  const generateImg = async () => {
+  const generateVideoClip = async () => {
     setLoadingImage(true); // Start loading
     setImageSrc(null); // Clear previous image
     console.log("Prompt to submit:", promptToSubmit);
     try {
-      const imageBuffer = await generateImage(promptToSubmit);
-      if (imageBuffer) {
-        const imageUrl = `data:image/png;base64,${imageBuffer}`;
-        setImageSrc(imageUrl);
+      const videoBuffer = await generateVideo(promptToSubmit);
+      if (videoBuffer) {
+        const videoUrl = URL.createObjectURL(new Blob([videoBuffer], { type: 'video/mp4' }));
+        setImageSrc(videoUrl);
       }
     } finally {
       setLoadingImage(false); // End loading
@@ -165,12 +165,12 @@ export default function Home() {
           />
           <div className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-4 border-dashed ${imageSrc ? 'border-transparent' : 'border-neutral-700'} flex items-center justify-center transition duration-200 ease-in-out`}>
             {!imageSrc && !loadingImage && <p className="text-2xl text-neutral-800 font-semibold">Image will appear here</p>}
-            {loadingImage && <p className='text-2xl text-neutral-600'>Generating image...</p>}
+            {loadingImage && <p className='text-2xl text-neutral-600'>Generating scene...</p>}
             {imageSrc && <img src={imageSrc} alt="Generated Image" className="w-full h-full object-cover transition duration-200 ease-in-out" />}
           </div>
           <button
             className='rounded-md bg-sky-700 p-2 text-white mt-4 transition duration-200 ease-in-out hover:bg-sky-600 disabled:opacity-50'
-            onClick={generateImg}
+            onClick={generateVideoClip}
             disabled={loadingImage}
           >
             {loadingImage ? 'Generating...' : 'Generate'}
