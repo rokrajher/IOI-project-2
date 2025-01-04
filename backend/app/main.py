@@ -75,42 +75,42 @@ import base64
 @app.get("/generate")
 async def generate(prompt: str):
     try:
-        print("Generating image...")
+        # print("Generating image...")
         
-        # Generate the image using the pipeline
-        images = pipeline(
-            prompt=prompt,
-            num_inference_steps=28,
-            guidance_scale=4.5,
-            max_sequence_length=512,
-        ).images[0]
+        # # Generate the image using the pipeline
+        # images = pipeline(
+        #     prompt=prompt,
+        #     num_inference_steps=28,
+        #     guidance_scale=4.5,
+        #     max_sequence_length=512,
+        # ).images[0]
 
-        print(f"Image generated! Type: {type(images)}")
+        # print(f"Image generated! Type: {type(images)}")
 
-        # Ensure it's a valid PIL image
-        if isinstance(images, Image.Image):
-            print("Image is already a PIL image")
-            image = images
-        else:
-            try:
-                image = numpy_to_pil(images)[0]
-            except Exception as conversion_error:
-                raise HTTPException(
-                    status_code=500, detail=f"Failed to convert to PIL image: {conversion_error}"
-                )
+        # # Ensure it's a valid PIL image
+        # if isinstance(images, Image.Image):
+        #     print("Image is already a PIL image")
+        #     image = images
+        # else:
+        #     try:
+        #         image = numpy_to_pil(images)[0]
+        #     except Exception as conversion_error:
+        #         raise HTTPException(
+        #             status_code=500, detail=f"Failed to convert to PIL image: {conversion_error}"
+        #         )
 
-        # Check if the result is a PIL image
-        if not isinstance(image, Image.Image):
-            raise HTTPException(status_code=500, detail="Image generation failed, not a valid PIL Image.")
+        # # Check if the result is a PIL image
+        # if not isinstance(image, Image.Image):
+        #     raise HTTPException(status_code=500, detail="Image generation failed, not a valid PIL Image.")
 
-        image = image.resize((1024, 576))
-        print("Generating video...")
+        # image = image.resize((1024, 576))
+        # print("Generating video...")
 
-        frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
-        print("Video generated!")
+        # frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
+        # print("Video generated!")
 
-        # Export the frames to a video file
-        export_to_video(frames, "generated.mp4", fps=7)
+        # # Export the frames to a video file
+        # export_to_video(frames, "generated.mp4", fps=7)
 
         # Read the video file and encode it in base64
         with open("generated.mp4", "rb") as video_file:

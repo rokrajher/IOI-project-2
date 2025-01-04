@@ -39,8 +39,6 @@ export default function Home() {
 
   const allEmpty = promptText.trim() === '' || (!imageStyle && !brightness && !color);
 
-  console.log("imgSrc:", imageSrc); // Debugging
-
   const generateVideoClip = async () => {
     setLoadingImage(true); // Start loading
     setImageSrc(null); // Clear previous video/image
