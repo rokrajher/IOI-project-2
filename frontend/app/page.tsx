@@ -42,7 +42,7 @@ export default function Home() {
   const generateVideoClip = async () => {
     setLoadingImage(true); // Start loading
     setImageSrc(null); // Clear previous image
-    console.log("Prompt to submit:", promptToSubmit);
+    // console.log("Prompt to submit:", promptToSubmit);
     try {
       const videoBuffer = await generateVideo(promptToSubmit);
       if (videoBuffer) {

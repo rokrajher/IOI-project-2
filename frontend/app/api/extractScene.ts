@@ -17,7 +17,7 @@ export default async function extractScene(screenplay: string): Promise<string[]
       throw new Error("Prompt cannot be empty.");
     }
 
-    console.log("Sending payload to backend:", screenplay);
+    // console.log("Sending payload to backend:", screenplay);
 
     // Make the POST request to the backend
     const response = await axios.post<ExtractSceneResponse>('http://localhost:8000/extract', {

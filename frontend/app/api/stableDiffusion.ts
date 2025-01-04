@@ -18,7 +18,8 @@ export default async function generateVideo(promptText: string): Promise<string 
     if (response.status === 200 && response.data.video) {
       return response.data.video; // Return the base64 video string
     } else {
-      throw new Error("Invalid response from backend");
+      console.error("Unexpected response structure:", response.data);
+      return null;
     }
   } catch (error) {
     console.error("Error generating video:", error);

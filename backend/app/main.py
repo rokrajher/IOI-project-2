@@ -10,7 +10,8 @@ from io import BytesIO
 import base64
 from pydantic import BaseModel
 from openai import OpenAI, OpenAIError
-from diffusers.utils import load_image, export_to_video
+from diffusers.utils import load_image, export_to_video, numpy_to_pil
+from PIL import Image
 import json
 import re
 
@@ -66,25 +67,48 @@ generator = torch.manual_seed(42)
 
 
 
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
+from PIL import Image
+import base64
+
 @app.get("/generate")
 async def generate(prompt: str):
     try:
+        print("Generating image...")
+        
         # Generate the image using the pipeline
-        image = pipeline(
+        images = pipeline(
             prompt=prompt,
             num_inference_steps=28,
             guidance_scale=4.5,
             max_sequence_length=512,
         ).images[0]
 
+        print(f"Image generated! Type: {type(images)}")
 
-        
-        print("generating image...")       
-        # Load the conditioning image
-        image = load_image(image)
+        # Ensure it's a valid PIL image
+        if isinstance(images, Image.Image):
+            print("Image is already a PIL image")
+            image = images
+        else:
+            try:
+                image = numpy_to_pil(images)[0]
+            except Exception as conversion_error:
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to convert to PIL image: {conversion_error}"
+                )
+
+        # Check if the result is a PIL image
+        if not isinstance(image, Image.Image):
+            raise HTTPException(status_code=500, detail="Image generation failed, not a valid PIL Image.")
+
         image = image.resize((1024, 576))
+        print("Generating video...")
 
         frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
+        print("Video generated!")
+
         # Export the frames to a video file
         export_to_video(frames, "generated.mp4", fps=7)
 
@@ -97,7 +121,8 @@ async def generate(prompt: str):
 
     except Exception as e:
         # Handle errors and return a clear message
-        return HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
     
 
     

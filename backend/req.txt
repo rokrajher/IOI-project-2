@@ -12,3 +12,5 @@ python-dotenv
 bitsandbytes
 openai
 pydantic
+imageio 
+imageio-ffmpeg
