@@ -39,20 +39,35 @@ export default function Home() {
 
   const allEmpty = promptText.trim() === '' || (!imageStyle && !brightness && !color);
 
+  console.log("imgSrc:", imageSrc); // Debugging
+
   const generateVideoClip = async () => {
     setLoadingImage(true); // Start loading
-    setImageSrc(null); // Clear previous image
-    // console.log("Prompt to submit:", promptToSubmit);
+    setImageSrc(null); // Clear previous video/image
+  
     try {
-      const videoBuffer = await generateVideo(promptToSubmit);
-      if (videoBuffer) {
-        const videoUrl = URL.createObjectURL(new Blob([videoBuffer], { type: 'video/mp4' }));
+      // Request video generation
+      const base64Video = await generateVideo(promptToSubmit);
+  
+      if (base64Video) {
+        // Convert the Base64 video string to a Blob and generate a URL
+        const binaryData = atob(base64Video); // Decode Base64 string
+        const byteArray = Uint8Array.from(binaryData, (char) => char.charCodeAt(0));
+        const videoBlob = new Blob([byteArray], { type: "video/mp4" });
+        const videoUrl = URL.createObjectURL(videoBlob);
+  
+        // Update the video source
         setImageSrc(videoUrl);
+      } else {
+        console.error("Failed to generate video. The returned video string is null.");
       }
+    } catch (error) {
+      console.error("Error in generateVideoClip:", error);
     } finally {
       setLoadingImage(false); // End loading
     }
   };
+  
 
   const onFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -163,10 +178,24 @@ export default function Home() {
             placeholder="Upload your script for automatic prompt generation..."
             className="w-full h-32 p-2 border border-gray-300 rounded-md mb-4 transition duration-200 ease-in-out focus:border-sky-700 focus:outline-none text-neutral-700"
           />
-          <div className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-4 border-dashed ${imageSrc ? 'border-transparent' : 'border-neutral-700'} flex items-center justify-center transition duration-200 ease-in-out`}>
-            {!imageSrc && !loadingImage && <p className="text-2xl text-neutral-800 font-semibold">Image will appear here</p>}
-            {loadingImage && <p className='text-2xl text-neutral-600'>Generating scene...</p>}
-            {imageSrc && <img src={imageSrc} alt="Generated Image" className="w-full h-full object-cover transition duration-200 ease-in-out" />}
+          <div
+            className={`w-full bg-gradient-to-tr from-red-300 to-sky-300 aspect-video border-4 border-dashed ${
+              imageSrc ? 'border-transparent' : 'border-neutral-700'
+            } flex items-center justify-center transition duration-200 ease-in-out`}
+          >
+            {!imageSrc && !loadingImage && (
+              <p className="text-2xl text-neutral-800 font-semibold">Video will appear here</p>
+            )}
+            {loadingImage && <p className="text-2xl text-neutral-600">Generating video...</p>}
+            {imageSrc && (
+              <video
+                src={imageSrc}
+                controls
+                className="w-full h-full object-cover transition duration-200 ease-in-out"
+              >
+                Your browser does not support the video tag.
+              </video>
+            )}
           </div>
           <button
             className='rounded-md bg-sky-700 p-2 text-white mt-4 transition duration-200 ease-in-out hover:bg-sky-600 disabled:opacity-50'
