@@ -11,6 +11,7 @@ interface ResponseData {
  */
 export default async function generateVideo(promptText: string): Promise<string | null> {
   try {
+    console.log("Generating video with prompt:", promptText);
     const response = await axios.get<ResponseData>("http://localhost:8000/generate", {
       params: { prompt: promptText },
     });

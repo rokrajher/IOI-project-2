@@ -97,17 +97,20 @@ async def generate(prompt: str):
             raise HTTPException(status_code=500, detail="Image generation failed, not a valid PIL Image.")
 
         image = image.resize((1024, 576))
-        print("Generating video...")
+        #save the image
+        image.save("image.png")
+        # print("Generating video...")
 
-        frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
-        print("Video generated!")
+        # frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
+        # print("Video generated!")
+        video_str = ""
 
-        # Export the frames to a video file
-        export_to_video(frames, "generated_0.mp4", fps=7)
+        # # Export the frames to a video file
+        # export_to_video(frames, "generated_00.mp4", fps=7)
 
-        # Read the video file and encode it in base64
-        with open("generated_0.mp4", "rb") as video_file:
-            video_str = base64.b64encode(video_file.read()).decode("utf-8")
+        # # Read the video file and encode it in base64
+        # with open("generated_00.mp4", "rb") as video_file:
+        #     video_str = base64.b64encode(video_file.read()).decode("utf-8")
 
         # Return the base64-encoded video in JSON format
         return JSONResponse(content={"video": video_str})
