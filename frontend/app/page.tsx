@@ -111,7 +111,7 @@ export default function Home() {
         const pdfDataUrl = event.target?.result as string;
         const loadingTask = pdfjsLib.getDocument({ url: pdfDataUrl });
         loadingTask.promise.then(async (pdf: pdfjsLib.PDFDocumentProxy) => {
-          const startPage: number = 36;
+          const startPage: number = 37;
           const numPages: number = 39; // For testing purposes frozen 37 to 38, space odyssey from 6 to 7
           let fullText: string = '';
 
