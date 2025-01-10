@@ -109,15 +109,16 @@ export default function Home() {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const pdfDataUrl = event.target?.result as string;
+        const pdfTitle = file.name;
         const loadingTask = pdfjsLib.getDocument({ url: pdfDataUrl });
         loadingTask.promise.then(async (pdf: pdfjsLib.PDFDocumentProxy) => {
-          const startPage: number =6;
-          const numPages: number = 7; // For testing purposes frozen 37 to 38, space odyssey from 6 to 7
+          const startPage: number = pdfTitle.includes('Frozen') ? 37 : 6;
+          const numPages: number = pdfTitle.includes("Frozen") ? 38 : 7 ; // For testing purposes frozen 37 to 38, space odyssey from 6 to 7
           let fullText: string = '';
 
           for (let pageNum: number = startPage; pageNum <= numPages; pageNum++) {
             const page: pdfjsLib.PDFPageProxy = await pdf.getPage(pageNum);
-            const textContent: pdfjsLib.TextContent = await page.getTextContent();
+            const textContent = await page.getTextContent();
             const pageText: string = textContent.items.map((item: pdfjsLib.TextItem) => item.str).join(' ');
             fullText += `${pageText}\n\n`;
           }

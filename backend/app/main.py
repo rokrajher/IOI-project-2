@@ -98,19 +98,19 @@ async def generate(prompt: str):
 
         image = image.resize((1024, 576))
         #save the image
-        image.save("image.png")
+        image.save("./results/generated_image.png")
         # print("Generating video...")
 
-        # frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
+        frames = pipe(image, decode_chunk_size=8, generator=generator).frames[0]
         # print("Video generated!")
         video_str = ""
 
-        # # Export the frames to a video file
-        # export_to_video(frames, "generated_00.mp4", fps=7)
+        # Export the frames to a video file
+        export_to_video(frames, "./results/generated_video.mp4", fps=7)
 
-        # # Read the video file and encode it in base64
-        # with open("generated_00.mp4", "rb") as video_file:
-        #     video_str = base64.b64encode(video_file.read()).decode("utf-8")
+        # Read the video file and encode it in base64
+        with open("generated_00.mp4", "rb") as video_file:
+            video_str = base64.b64encode(video_file.read()).decode("utf-8")
 
         # Return the base64-encoded video in JSON format
         return JSONResponse(content={"video": video_str})
